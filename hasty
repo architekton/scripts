@@ -1,0 +1,51 @@
+#!/usr/bin/env sh
+
+# This small script uploads either a string or a file's contents to hastebin
+# and returns the bin url
+
+# Depends on curl, jq
+
+HELP="./hasty (string|[-f|--file filename])"
+
+function check_and_exit() {
+    if [ -z "$1" ]; then
+        echo "$HELP"
+        exit 1
+    fi
+}
+
+CONTENTS=""
+
+# https://stackoverflow.com/a/14203146
+while [[ $# -gt 0 ]]
+do
+    key="$1"
+    case $key in
+        -f|--file)
+            check_and_exit $CONTENTS # check if contents is already set
+            CONTENTS=$(<"$2")
+            shift # past argument
+            shift # past value
+            ;;
+        -h|--help)
+            echo "$HELP"
+            exit 1
+            shift # past argument
+            ;;
+        *)  # unknown option
+            check_and_exit $CONTENTS # check if contents is arleady set
+            CONTENTS=("$1")
+            shift # past argument
+            ;;
+    esac
+done
+
+if [ -z "$CONTENTS" ]; then
+    echo "$HELP"
+    exit 1
+fi
+
+URL="https://hastebin.com"
+RESPONE=$(curl -X POST -d "$CONTENTS" "$URL/documents")
+echo "$URL/$(jq -r '.key' <<< "$RESPONE")"
+
