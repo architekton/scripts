@@ -1,0 +1,10 @@
+#!/usr/bin/env sh
+
+DIR="$HOME/.config/todo"
+
+if [ -z "$1" ]; then
+    "$EDITOR" "$DIR"
+    exit 1
+fi
+
+echo $1 >> "$DIR"

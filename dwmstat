@@ -16,8 +16,16 @@ home_files() {
     echo "$(($n_files - 2))"
 }
 
+todo() {
+    local file="$HOME/.config/todo"
+    [ -f "$file" ] || touch "$file"
+
+    echo "$(wc -l "$file" | cut -d ' ' -f1)"
+}
+
 while true; do
-    LINE="Home: $(home_files) "
+    LINE="Todo: $(todo) "
+    LINE+="Home: $(home_files) "
     LINE+="Ram: $(ram) "
     LINE+="Time: $(clock)"
 
@@ -25,4 +33,3 @@ while true; do
 
     sleep 1
 done
-
