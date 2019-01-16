@@ -1,19 +1,20 @@
 #!/usr/bin/env sh
 
+MAILDIR="$HOME/Mail"
+
 clock () {
-    date "+%T %a %e %b"
+    date "+%H:%M %a %e %b"
 }
 
 ram () {
     local line="$(free -m | grep 'Mem:' | sed 's/ \+/ /g')"
-    echo "$(cut -d ' ' -f3 <<< "$line")/$(cut -d ' ' -f2 <<< "$line")"
+    local current="$(cut -d ' ' -f3 <<< "$line")"
+    local total="$(cut -d ' ' -f2 <<< "$line")"
+    echo "$current/$total"
 }
 
 home_files() {
-    local n_files="$(ls -al "$HOME"| wc -l)"
-
-    # -2 accounting for . and ..
-    echo "$(($n_files - 2))"
+    echo "$(ls -Al "$HOME"| wc -l)"
 }
 
 todo() {
@@ -23,13 +24,24 @@ todo() {
     echo "$(wc -l "$file" | cut -d ' ' -f1)"
 }
 
+unread_mail() {
+    local count=0
+    local inboxes="$(find $maildir -type d -name INBOX)"
+    for inbox in  $inboxes; do
+        ((count+=$(ls -1 "$inbox/new" | wc -l)))
+    done
+    echo "$count"
+}
+
 while true; do
-    LINE="Todo: $(todo) "
+    LINE=""
+    [ -d $MAILDIR ] && LINE+="Mail: $(unread_mail) "
+    LINE+="Todo: $(todo) "
     LINE+="Home: $(home_files) "
     LINE+="Ram: $(ram) "
     LINE+="Time: $(clock)"
 
     xsetroot -name "${LINE}"
 
-    sleep 1
+    sleep 2
 done
