@@ -1,0 +1,6 @@
+#!/usr/bin/env sh
+
+# Depends youtube-dl, mplayer
+
+[ -z "$1" ] && echo "Missing argument." && exit 1
+youtube-dl -q -o - $1 | mplayer -cache 16384 - > /dev/null 2>&1
