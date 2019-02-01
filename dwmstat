@@ -1,47 +1,47 @@
 #!/usr/bin/env sh
 
 MAILDIR="$HOME/Mail"
+BAT="/sys/class/power_supply/BAT1/capacity"
 
 clock () {
-    date "+%H:%M %a %e %b"
+    echo "Date: $(date "+%H:%M %a %e %b")"
 }
 
 ram () {
     local line="$(free -m | grep 'Mem:' | sed 's/ \+/ /g')"
     local current="$(cut -d ' ' -f3 <<< "$line")"
     local total="$(cut -d ' ' -f2 <<< "$line")"
-    echo "$current/$total"
+    echo "Ram: $current/$total"
 }
 
 home_files() {
-    echo "$(ls -Al "$HOME"| wc -l)"
+    echo "Home: $(ls -Al "$HOME"| wc -l)"
 }
 
 todo() {
     local file="$HOME/.config/todo"
     [ -f "$file" ] || touch "$file"
 
-    echo "$(wc -l "$file" | cut -d ' ' -f1)"
+    echo "Todo: $(wc -l "$file" | cut -d ' ' -f1)"
 }
 
 unread_mail() {
+    [ -d $MAILDIR ] || return -1
+
     local count=0
     local inboxes="$(find $maildir -type d -name INBOX)"
     for inbox in  $inboxes; do
         ((count+=$(ls -1 "$inbox/new" | wc -l)))
     done
-    echo "$count"
+    echo "Mail: $count"
+}
+
+battery() {
+    [ -f $BAT ] || return -1
+    echo "Bat: $(cat $BAT)"
 }
 
 while true; do
-    LINE=""
-    [ -d $MAILDIR ] && LINE+="Mail: $(unread_mail) "
-    LINE+="Todo: $(todo) "
-    LINE+="Home: $(home_files) "
-    LINE+="Ram: $(ram) "
-    LINE+="Time: $(clock)"
-
-    xsetroot -name "${LINE}"
-
-    sleep 2
+    xsetroot -name "$(unread_mail) $(todo) $(home_files) $(battery) $(ram) $(clock)"
+    sleep 5
 done
