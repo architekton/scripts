@@ -29,8 +29,7 @@ unread_mail() {
     [ -d $MAILDIR ] || return -1
 
     local count=0
-    local inboxes="$(find $maildir -type d -name INBOX)"
-    for inbox in  $inboxes; do
+    for inbox in $MAILDIR/*/*; do
         ((count+=$(ls -1 "$inbox/new" | wc -l)))
     done
     echo "Mail: $count"
