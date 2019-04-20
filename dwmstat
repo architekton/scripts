@@ -1,7 +1,8 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 
 MAILDIR="$HOME/Mail"
 BAT="/sys/class/power_supply/BAT1/capacity"
+INAME="enp9s0"
 
 clock () {
     echo "Date: $(date "+%H:%M %a %e %b")"
@@ -35,12 +36,22 @@ unread_mail() {
     echo "Mail: $count"
 }
 
+net() {
+    local today=$(vnstat -i $INAME | grep "today" \
+        | awk '{print $8" "substr ($9, 1, 1)}')
+    local month=$(vnstat -i $INAME | grep "$(date +"%Y-%m")" \
+        | awk '{print $8" "substr ($9, 1, 1)}' | sed '/^\s*$/d')
+    echo "Today: $today Month: $month"
+}
+
 battery() {
     [ -f $BAT ] || return -1
     echo "Bat: $(cat $BAT)"
 }
 
 while true; do
-    xsetroot -name "$(unread_mail) $(todo) $(home_files) $(battery) $(ram) $(clock)"
-    sleep 5
+    RESULT="$(net) $(unread_mail &) $(todo) $(home_files) $(battery) $(ram &) $(clock)"
+    wait
+    xsetroot -name "$RESULT" #"$(net) $(unread_mail) $(todo) $(home_files) $(battery) $(ram) $(clock)"
+    sleep 3
 done
